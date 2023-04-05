@@ -1,0 +1,19 @@
+name: 'Monorepo Conventional Versioning'
+description: 'Version multiple monorepo components independently based on the Conventional Commits specification.'
+inputs:
+  github-token:  # GitHub token
+    description: 'GitHub token'
+    required: true
+  component:
+    description: 'Monorepo component which will be versioned'
+    required: true
+  dry-run:
+    description: "Whether to create the release on GitHub. If true, release history won't be tracked."
+outputs:
+  new-version-created:
+    description: 'Whether a new version was created (yes/no)'
+  version:
+    description: 'The generated version'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
