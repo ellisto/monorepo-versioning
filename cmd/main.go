@@ -21,6 +21,7 @@ func main() {
 	ownerAndRepository := os.Getenv("GITHUB_REPOSITORY")
 	// Branch or tag
 	ref := os.Getenv("GITHUB_REF_NAME")
+	fmt.Printf("GITHUB_REF_NAME: %s\nGITHUB_REF: %s\n", os.Getenv("GITHUB_REF_NAME"), os.Getenv("GITHUB_REF"))
 	revision := os.Getenv("GITHUB_SHA")
 
 	versioning := pkg.NewAction(ownerAndRepository, component, ref, revision, initialVersion, ensureNewGitHubClient(token))
