@@ -55,11 +55,6 @@ func NewAction(ownerAndRepository string, component string, branch string, revis
 func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 	existingReleases := filterAndSortReleasesForComponent(a.component, a.getAllReleases())
 	existingVersion, firstVersionCreated := existingVersionOrNew(a.component, existingReleases, a.initialVersion)
-	if firstVersionCreated {
-		fmt.Printf("No existing version found for component, will generate %s\n", a.initialVersion)
-	}
-
-	fmt.Printf("Ref: %s\n", a.branch)
 
 	previousChangeTime := a.getPreviousChangeTime(existingReleases)
 	currentChangeTime := a.getCurrentChangeTime()
@@ -200,6 +195,7 @@ func (a VersioningAction) getPreviousChangeTime(existingReleases []*github.Repos
 
 // newVersion based on the current version and commits since this version
 func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits []*conventionalcommits.ConventionalCommit, firstVersionCreated bool) *semver.Version {
+	fmt.Printf("Current ref: %s, default branch: %s\n", a.branch, a.defaultBranch)
 	// If the version was just created (ie: it's 1.0.0 and was generated because no existing version is present)
 	// then just return the created version. Otherwise we'll immediately bump to 1.0.1/1.1.0/2.0.0 based on
 	// any commits in the repository.
@@ -209,6 +205,8 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 		if a.branch != a.defaultBranch {
 			currentVersion.SetPrerelease(a.revision[:7])
 		}
+
+		fmt.Printf("No existing version found for component, will generate %s\n", currentVersion.String())
 
 		return currentVersion
 	}
