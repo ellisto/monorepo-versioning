@@ -38,6 +38,7 @@ func NewAction(ownerAndRepository string, component string, branch string, revis
 		client:         client,
 		owner:          owner,
 		repository:     repository,
+		branch:         branch,
 		component:      component,
 		revision:       revision,
 		initialVersion: initialVersion,
