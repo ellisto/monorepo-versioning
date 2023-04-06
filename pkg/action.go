@@ -87,6 +87,7 @@ func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 func (a VersioningAction) createGitHubRelease(newVersion *semver.Version, commits []*github.RepositoryCommit) {
 	versionName := strings.ToLower(prefixWithComponent(a.component, newVersion.String()))
 	releaseTitle := fmt.Sprintf("%s: %s", cases.Title(language.English).String(a.component), newVersion.String())
+	isPrerelease := a.branch == a.defaultBranch
 	// We can't use auto-generated release notes, as we need to manually filter for changes specific to the
 	// given component.
 	useGitHubGeneratedReleaseNotes := false
@@ -99,6 +100,7 @@ func (a VersioningAction) createGitHubRelease(newVersion *semver.Version, commit
 		TargetCommitish:      &a.revision,
 		GenerateReleaseNotes: &useGitHubGeneratedReleaseNotes,
 		Body:                 &releaseNotes,
+		Prerelease:           &isPrerelease,
 	})
 
 	if err != nil {
