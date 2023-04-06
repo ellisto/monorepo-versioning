@@ -202,6 +202,12 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 	// then just return the created version. Otherwise we'll immediately bump to 1.0.1/1.1.0/2.0.0 based on
 	// any commits in the repository.
 	if firstVersionCreated {
+		// We aren't generating a version on the default branch, so this
+		// should be a prerelease version
+		if a.branch != a.defaultBranch {
+			currentVersion.SetPrerelease(a.revision[:7])
+		}
+
 		return currentVersion
 	}
 
