@@ -53,7 +53,7 @@ func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 	existingReleases := filterAndSortReleasesForComponent(a.component, a.getAllReleases())
 	existingVersion, firstVersionCreated := existingVersionOrNew(a.component, existingReleases, a.initialVersion)
 	if firstVersionCreated {
-		fmt.Printf("No existing version found for component, will generate %s", a.initialVersion)
+		fmt.Printf("No existing version found for component, will generate %s\n", a.initialVersion)
 	}
 
 	previousChangeTime := a.getPreviousChangeTime(existingReleases)
