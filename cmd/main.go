@@ -63,7 +63,7 @@ func main() {
 			output.WriteString("prerelease=no\n")
 		} else {
 			output.WriteString("new_version_created=yes\n")
-			output.WriteString(fmt.Sprintf("version=%s", newVersion.String()))
+			output.WriteString(fmt.Sprintf("version=%s\n", newVersion.String()))
 			if newVersion.Prerelease() == "" {
 				output.WriteString("prerelease=no\n")
 			} else {
