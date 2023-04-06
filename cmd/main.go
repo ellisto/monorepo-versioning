@@ -43,6 +43,7 @@ func main() {
 		fmt.Println("New version generated? No")
 	} else {
 		fmt.Println("New version generated? Yes")
+		fmt.Printf("Is pre-release? %t\n", newVersion.Prerelease() != "")
 		fmt.Printf("New version: %s\n", newVersion.String())
 	}
 
@@ -59,9 +60,15 @@ func main() {
 		if newVersion == nil {
 			output.WriteString("new_version_created=no\n")
 			output.WriteString("version=0.0.0-none\n")
+			output.WriteString("prerelease=no\n")
 		} else {
 			output.WriteString("new_version_created=yes\n")
 			output.WriteString(fmt.Sprintf("version=%s", newVersion.String()))
+			if newVersion.Prerelease() == "" {
+				output.WriteString("prerelease=no\n")
+			} else {
+				output.WriteString("prerelease=yes\n")
+			}
 		}
 	}
 }

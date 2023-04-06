@@ -23,6 +23,8 @@ outputs:
     description: 'Whether a new version was created (yes/no)'
   version:
     description: 'The generated version'
+  prerelease:
+    description: 'Whether the generated version is a pre-release or not'
 runs:
   using: 'docker'
   image: 'Dockerfile'

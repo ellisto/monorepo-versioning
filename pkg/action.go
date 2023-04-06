@@ -202,6 +202,7 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 		// We aren't generating a version on the default branch, so this
 		// should be a prerelease version
 		if a.branch != a.defaultBranch {
+			fmt.Printf("Current branch (%s) is not the default branch (%s), this version will be a pre-release\n", a.branch, a.defaultBranch)
 			prereleaseVersion, err := currentVersion.SetPrerelease(a.revision[:7])
 			if err != nil {
 				panic(err)
@@ -257,6 +258,8 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 	// We aren't generating a version on the default branch, so this
 	// should be a prerelease version
 	if a.branch != a.defaultBranch {
+		fmt.Printf("Current branch (%s) is not the default branch (%s), this version will be a pre-release\n", a.branch, a.defaultBranch)
+
 		var err error
 		nextVersion, err = nextVersion.SetPrerelease(a.revision[:7])
 		if err != nil {
