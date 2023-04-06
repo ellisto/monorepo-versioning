@@ -49,10 +49,10 @@ func main() {
 		defer output.Close()
 
 		if newVersion == nil {
-			output.WriteString("new-version-created=no\n")
+			output.WriteString("new_version_created=no\n")
 			output.WriteString("version=0.0.0-none\n")
 		} else {
-			output.WriteString("new-version-created=yes\n")
+			output.WriteString("new_version_created=yes\n")
 			output.WriteString(fmt.Sprintf("version=%s", newVersion.String()))
 		}
 	}
