@@ -24,12 +24,13 @@ type VersioningAction struct {
 	branch         string
 	revision       string
 	initialVersion string
+	defaultBranch  string
 	parser         conventionalcommits.Machine
 }
 
 // NewAction creates a new instance of the GitHub action for a given repository specified in the format
 // "owner/repository"
-func NewAction(ownerAndRepository string, component string, branch string, revision string, initialVersion string, client *github.Client) VersioningAction {
+func NewAction(ownerAndRepository string, component string, branch string, revision string, initialVersion string, defaultBranch string, client *github.Client) VersioningAction {
 	nameParts := strings.Split(ownerAndRepository, "/")
 	owner := nameParts[0]
 	repository := nameParts[1]
@@ -42,6 +43,7 @@ func NewAction(ownerAndRepository string, component string, branch string, revis
 		component:      component,
 		revision:       revision,
 		initialVersion: initialVersion,
+		defaultBranch:  defaultBranch,
 		parser:         parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)),
 	}
 }
@@ -66,7 +68,7 @@ func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 	newCommits := a.getNewCommits(previousChangeTime, currentChangeTime.Add(time.Millisecond), a.branch)
 	componentConventionalCommits := convertAndFilterCommitsForComponent(a.component, newCommits)
 
-	newVersion := newVersion(existingVersion, componentConventionalCommits, firstVersionCreated)
+	newVersion := a.newVersion(existingVersion, componentConventionalCommits, firstVersionCreated)
 	if newVersion == nil {
 		// No new version, nothing else to do
 		return nil
@@ -194,6 +196,64 @@ func (a VersioningAction) getPreviousChangeTime(existingReleases []*github.Repos
 	return &commitTime
 }
 
+// newVersion based on the current version and commits since this version
+func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits []*conventionalcommits.ConventionalCommit, firstVersionCreated bool) *semver.Version {
+	// If the version was just created (ie: it's 1.0.0 and was generated because no existing version is present)
+	// then just return the created version. Otherwise we'll immediately bump to 1.0.1/1.1.0/2.0.0 based on
+	// any commits in the repository.
+	if firstVersionCreated {
+		return currentVersion
+	}
+
+	// Major version bump
+	breakingChangesFound := false
+	// Minor version bump
+	featureChangesFound := false
+	// Patch version bump
+	fixChangesFound := false
+	// Any other commit types are currently ignored and will not generate a new version
+
+	for _, commit := range newCommits {
+		if commit.IsBreakingChange() {
+			breakingChangesFound = true
+			// Breaking changes always mean a major version bump so we can bail out here
+			// without examining any other commits
+			break
+		}
+
+		if commit.IsFeat() {
+			featureChangesFound = true
+		}
+
+		if commit.IsFix() {
+			fixChangesFound = true
+		}
+	}
+
+	var nextVersion semver.Version
+	if breakingChangesFound {
+		nextVersion = currentVersion.IncMajor()
+	} else if featureChangesFound {
+		nextVersion = currentVersion.IncMinor()
+	} else if fixChangesFound {
+		nextVersion = currentVersion.IncPatch()
+	}
+
+	// No changes, so no new version
+	if nextVersion == (semver.Version{}) {
+		return nil
+	}
+
+	// We aren't generating a version on the default branch, so this
+	// should be a prerelease version
+	if a.branch != a.defaultBranch {
+		nextVersion.SetPrerelease(a.revision[:7])
+	}
+
+	// No relevant changes found, don't generate a new version number
+	return &nextVersion
+}
+
 // generateReleaseNotes based on the commits since the last version
 func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommit) string {
 	releaseNotesTemplate := `
@@ -311,59 +371,6 @@ func existingVersionOrNew(component string, existingReleases []*github.Repositor
 	// Releases are named "ComponentName-SemanticVersion", strip the prefix to just get the latest version
 	latestReleaseVersion := strings.TrimPrefix(latestRelease.GetTagName(), getComponentPrefix(component))
 	return semver.MustParse(latestReleaseVersion), false
-}
-
-// newVersion based on the current version and commits since this version
-func newVersion(currentVersion *semver.Version, newCommits []*conventionalcommits.ConventionalCommit, firstVersionCreated bool) *semver.Version {
-	// If the version was just created (ie: it's 1.0.0 and was generated because no existing version is present)
-	// then just return the created version. Otherwise we'll immediately bump to 1.0.1/1.1.0/2.0.0 based on
-	// any commits in the repository.
-	if firstVersionCreated {
-		return currentVersion
-	}
-
-	// Major version bump
-	breakingChangesFound := false
-	// Minor version bump
-	featureChangesFound := false
-	// Patch version bump
-	fixChangesFound := false
-	// Any other commit types are currently ignored and will not generate a new version
-
-	for _, commit := range newCommits {
-		if commit.IsBreakingChange() {
-			breakingChangesFound = true
-			// Breaking changes always mean a major version bump so we can bail out here
-			// without examining any other commits
-			break
-		}
-
-		if commit.IsFeat() {
-			featureChangesFound = true
-		}
-
-		if commit.IsFix() {
-			fixChangesFound = true
-		}
-	}
-
-	if breakingChangesFound {
-		nextVersion := currentVersion.IncMajor()
-		return &nextVersion
-	}
-
-	if featureChangesFound {
-		nextVersion := currentVersion.IncMinor()
-		return &nextVersion
-	}
-
-	if fixChangesFound {
-		nextVersion := currentVersion.IncPatch()
-		return &nextVersion
-	}
-
-	// No relevant changes found, don't generate a new version number
-	return nil
 }
 
 // convertAndFilterCommitsForComponent, parsing the conventional commit message, and then filtering for commits

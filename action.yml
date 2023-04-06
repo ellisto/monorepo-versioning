@@ -1,6 +1,10 @@
 name: 'Monorepo Conventional Versioning'
 description: 'Version multiple monorepo components independently based on the Conventional Commits specification.'
 inputs:
+  default-branch:
+    description: "Default base branch. Versions generated from other git refs will be marked as pre-release versions."
+    default: 'main'
+    required: false
   github-token:  # GitHub token
     description: 'GitHub token'
     required: true

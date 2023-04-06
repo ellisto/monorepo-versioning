@@ -17,13 +17,21 @@ func main() {
 	component := os.Getenv("INPUT_COMPONENT")
 	isDryRun := isDryRun(os.Getenv("INPUT_DRY-RUN"))
 	initialVersion := os.Getenv("INPUT_INITIAL-VERSION")
-	// owner/ownerAndRepository
+	defaultBranch := os.Getenv("INPUT_DEFAULT-BRANCH")
+	// owner/repository
 	ownerAndRepository := os.Getenv("GITHUB_REPOSITORY")
 	// Branch or tag
 	ref := os.Getenv("GITHUB_REF_NAME")
 	revision := os.Getenv("GITHUB_SHA")
 
-	versioning := pkg.NewAction(ownerAndRepository, component, ref, revision, initialVersion, ensureNewGitHubClient(token))
+	versioning := pkg.NewAction(
+		ownerAndRepository,
+		component,
+		ref,
+		revision,
+		initialVersion,
+		defaultBranch,
+		ensureNewGitHubClient(token))
 
 	newVersion := versioning.GenerateVersion(isDryRun)
 
