@@ -16,13 +16,14 @@ func main() {
 	token := os.Getenv("INPUT_GITHUB-TOKEN")
 	component := os.Getenv("INPUT_COMPONENT")
 	isDryRun := isDryRun(os.Getenv("INPUT_DRY-RUN"))
+	initialVersion := os.Getenv("INPUT_INITIAL-VERSION")
 	// owner/ownerAndRepository
 	ownerAndRepository := os.Getenv("GITHUB_REPOSITORY")
 	// Branch or tag
 	ref := os.Getenv("GITHUB_REF_NAME")
 	revision := os.Getenv("GITHUB_SHA")
 
-	versioning := pkg.NewAction(ownerAndRepository, component, ref, revision, ensureNewGitHubClient(token))
+	versioning := pkg.NewAction(ownerAndRepository, component, ref, revision, initialVersion, ensureNewGitHubClient(token))
 
 	newVersion := versioning.GenerateVersion(isDryRun)
 

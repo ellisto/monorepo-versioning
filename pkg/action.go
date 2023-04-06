@@ -17,29 +17,31 @@ import (
 
 // VersioningAction contains logic to generate a new version
 type VersioningAction struct {
-	client     *github.Client
-	owner      string
-	repository string
-	component  string
-	branch     string
-	revision   string
-	parser     conventionalcommits.Machine
+	client         *github.Client
+	owner          string
+	repository     string
+	component      string
+	branch         string
+	revision       string
+	initialVersion string
+	parser         conventionalcommits.Machine
 }
 
 // NewAction creates a new instance of the GitHub action for a given repository specified in the format
 // "owner/repository"
-func NewAction(ownerAndRepository string, component string, branch string, revision string, client *github.Client) VersioningAction {
+func NewAction(ownerAndRepository string, component string, branch string, revision string, initialVersion string, client *github.Client) VersioningAction {
 	nameParts := strings.Split(ownerAndRepository, "/")
 	owner := nameParts[0]
 	repository := nameParts[1]
 
 	return VersioningAction{
-		client:     client,
-		owner:      owner,
-		repository: repository,
-		component:  component,
-		revision:   revision,
-		parser:     parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)),
+		client:         client,
+		owner:          owner,
+		repository:     repository,
+		component:      component,
+		revision:       revision,
+		initialVersion: initialVersion,
+		parser:         parser.NewMachine(conventionalcommits.WithTypes(conventionalcommits.TypesConventional)),
 	}
 }
 
@@ -49,7 +51,7 @@ func NewAction(ownerAndRepository string, component string, branch string, revis
 // name will be considered.
 func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 	existingReleases := filterAndSortReleasesForComponent(a.component, a.getAllReleases())
-	existingVersion, firstVersionCreated := existingVersionOrNew(a.component, existingReleases)
+	existingVersion, firstVersionCreated := existingVersionOrNew(a.component, existingReleases, a.initialVersion)
 	if firstVersionCreated {
 		fmt.Println("No existing version found for component, will generate 1.0.0")
 	}
@@ -296,9 +298,9 @@ func formatCommitChangelogEntry(commit *github.RepositoryCommit, conventionalCom
 }
 
 // existingVersionOrNew gets the existing version for a component, or generates a version 1.0.0.
-func existingVersionOrNew(component string, existingReleases []*github.RepositoryRelease) (version *semver.Version, firstVersion bool) {
+func existingVersionOrNew(component string, existingReleases []*github.RepositoryRelease, initialVersion string) (version *semver.Version, firstVersion bool) {
 	if len(existingReleases) == 0 {
-		return semver.MustParse("1.0.0"), true
+		return semver.MustParse(initialVersion), true
 	}
 
 	latestRelease := existingReleases[0] // existingReleases is sorted in descending order of publish date
