@@ -56,6 +56,8 @@ func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 		fmt.Printf("No existing version found for component, will generate %s\n", a.initialVersion)
 	}
 
+	fmt.Printf("Ref: %s\n", a.branch)
+
 	previousChangeTime := a.getPreviousChangeTime(existingReleases)
 	currentChangeTime := a.getCurrentChangeTime()
 	// Add 1 millisecond to the current change time so that the current commit is included in the
