@@ -21,6 +21,7 @@ type VersioningAction struct {
 	owner          string
 	repository     string
 	component      string
+	label          string
 	branch         string
 	revision       string
 	initialVersion string
@@ -30,7 +31,7 @@ type VersioningAction struct {
 
 // NewAction creates a new instance of the GitHub action for a given repository specified in the format
 // "owner/repository"
-func NewAction(ownerAndRepository string, component string, branch string, revision string, initialVersion string, defaultBranch string, client *github.Client) VersioningAction {
+func NewAction(ownerAndRepository string, component string, label string, branch string, revision string, initialVersion string, defaultBranch string, client *github.Client) VersioningAction {
 	nameParts := strings.Split(ownerAndRepository, "/")
 	owner := nameParts[0]
 	repository := nameParts[1]
@@ -41,6 +42,7 @@ func NewAction(ownerAndRepository string, component string, branch string, revis
 		repository:     repository,
 		branch:         branch,
 		component:      component,
+		label:          label,
 		revision:       revision,
 		initialVersion: initialVersion,
 		defaultBranch:  defaultBranch,
@@ -81,7 +83,13 @@ func (a VersioningAction) GenerateVersion(dryRun bool) *semver.Version {
 // createGitHubRelease based on the current revision and generated version
 func (a VersioningAction) createGitHubRelease(newVersion *semver.Version, commits []*github.RepositoryCommit) {
 	versionName := strings.ToLower(prefixWithComponent(a.component, newVersion.String()))
-	releaseTitle := fmt.Sprintf("%s: %s", cases.Title(language.English).String(a.component), newVersion.String())
+	var releaseTitle string
+	// Prefer a human-readable label if one provided, otherwise use the component name
+	if a.label != "" {
+		releaseTitle = fmt.Sprintf("%s: %s", cases.Title(language.English).String(a.label), newVersion.String())
+	} else {
+		releaseTitle = fmt.Sprintf("%s: %s", cases.Title(language.English).String(a.component), newVersion.String())
+	}
 	isPrerelease := a.branch != a.defaultBranch
 	// We can't use auto-generated release notes, as we need to manually filter for changes specific to the
 	// given component.

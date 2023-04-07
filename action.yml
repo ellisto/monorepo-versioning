@@ -11,6 +11,10 @@ inputs:
   component:
     description: 'Monorepo component which will be versioned'
     required: true
+  label:
+    description: 'A human readable label for the component. This will be used in GitHub release titles'
+    required: false
+    default: ''
   dry-run:
     description: "Whether to create the release on GitHub. If true, release history won't be tracked."
   initial-version:

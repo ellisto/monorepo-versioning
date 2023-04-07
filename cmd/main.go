@@ -15,6 +15,7 @@ func main() {
 	outputPath := os.Getenv("GITHUB_OUTPUT")
 	token := os.Getenv("INPUT_GITHUB-TOKEN")
 	component := os.Getenv("INPUT_COMPONENT")
+	label := os.Getenv("INPUT_LABEL")
 	isDryRun := isDryRun(os.Getenv("INPUT_DRY-RUN"))
 	initialVersion := os.Getenv("INPUT_INITIAL-VERSION")
 	defaultBranch := os.Getenv("INPUT_DEFAULT-BRANCH")
@@ -27,6 +28,7 @@ func main() {
 	versioning := pkg.NewAction(
 		ownerAndRepository,
 		component,
+		label,
 		ref,
 		revision,
 		initialVersion,
