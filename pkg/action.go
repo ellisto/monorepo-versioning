@@ -380,6 +380,7 @@ func formatCommitChangelogEntry(commit *github.RepositoryCommit, conventionalCom
 // existingVersionOrNew gets the existing version for a component, or generates a version 1.0.0.
 func existingVersionOrNew(component string, existingReleases []*github.RepositoryRelease, initialVersion string) (version *semver.Version, firstVersion bool) {
 	if len(existingReleases) == 0 {
+		fmt.Println("No existing releases for component, will use initial version")
 		return semver.MustParse(initialVersion), true
 	}
 
@@ -427,7 +428,7 @@ func convertAndFilterCommitsForComponent(component string, commits []*github.Rep
 func filterAndSortReleasesForComponent(component string, releases []*github.RepositoryRelease) []*github.RepositoryRelease {
 	var matchingReleases []*github.RepositoryRelease
 	for _, release := range releases {
-		if strings.HasPrefix(release.GetTagName(), getComponentPrefix(component)) {
+		if strings.HasPrefix(strings.ToLower(release.GetTagName()), getComponentPrefix(component)) {
 			matchingReleases = append(matchingReleases, release)
 		}
 	}
@@ -443,10 +444,10 @@ func filterAndSortReleasesForComponent(component string, releases []*github.Repo
 
 // prefixWithComponent defines the logic to convert a component name into a tag prefix
 func prefixWithComponent(component string, str string) string {
-	// Append a hyphen to the component name
 	return fmt.Sprintf("%s%s", getComponentPrefix(component), str)
 }
 
 func getComponentPrefix(component string) string {
-	return fmt.Sprintf("%s-", component)
+	// Append a hyphen to the component name
+	return fmt.Sprintf("%s-", strings.ToLower(component))
 }
