@@ -249,7 +249,7 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 			fixChangesFound = true
 		}
 
-		if commit.Type == "refactor" {
+		if strings.EqualFold(commit.Type, "refactor") {
 			refactorChangesFound = true
 		}
 	}
