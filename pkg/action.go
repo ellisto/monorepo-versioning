@@ -230,6 +230,7 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 	featureChangesFound := false
 	// Patch version bump
 	fixChangesFound := false
+	refactorChangesFound := false
 	// Any other commit types are currently ignored and will not generate a new version
 
 	for _, commit := range newCommits {
@@ -247,6 +248,10 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 		if commit.IsFix() {
 			fixChangesFound = true
 		}
+
+		if commit.Type == "refactor" {
+			refactorChangesFound = true
+		}
 	}
 
 	var nextVersion semver.Version
@@ -255,6 +260,8 @@ func (a VersioningAction) newVersion(currentVersion *semver.Version, newCommits 
 	} else if featureChangesFound {
 		nextVersion = currentVersion.IncMinor()
 	} else if fixChangesFound {
+		nextVersion = currentVersion.IncPatch()
+	} else if refactorChangesFound {
 		nextVersion = currentVersion.IncPatch()
 	}
 
@@ -286,6 +293,7 @@ func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommi
 {breaking}
 {features}
 {fixes}
+{refactors}
 {contributors}
 `
 
@@ -304,6 +312,12 @@ func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommi
 	fixesStr.WriteString("_Fixes some unintended behaviour from a previous version. You should familiarise yourself with these changes to understand any problems you may have experienced in previous versions._\n")
 
 	fixesInitialLength := fixesStr.Len()
+
+	refactorsStr := strings.Builder{}
+	fixesStr.WriteString("### :raised_hands: Refactoring\n")
+	fixesStr.WriteString("_Changes or improvements to an existing implementation._\n")
+
+	refactorsInitialLength := refactorsStr.Len()
 
 	contributorsStr := strings.Builder{}
 	contributorsStr.WriteString("### :heart_eyes: Contributors\n")
@@ -342,6 +356,10 @@ func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommi
 			fixesStr.WriteString(formatCommitChangelogEntry(commit, conventionalCommit))
 		}
 
+		if strings.EqualFold(conventionalCommit.Type, "refactor") {
+			refactorsStr.WriteString(formatCommitChangelogEntry(commit, conventionalCommit))
+		}
+
 		if _, ok := contributors[commit.GetAuthor().GetLogin()]; !ok {
 			contributors[commit.GetAuthor().GetLogin()] = true
 			contributorsStr.WriteString(fmt.Sprintf("* @%s\n", commit.GetAuthor().GetLogin()))
@@ -364,6 +382,12 @@ func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommi
 		releaseNotesTemplate = strings.Replace(releaseNotesTemplate, "{fixes}", "", 1)
 	} else {
 		releaseNotesTemplate = strings.Replace(releaseNotesTemplate, "{fixes}", fixesStr.String(), 1)
+	}
+
+	if refactorsStr.Len() == refactorsInitialLength {
+		releaseNotesTemplate = strings.Replace(releaseNotesTemplate, "{refactors}", "", 1)
+	} else {
+		releaseNotesTemplate = strings.Replace(releaseNotesTemplate, "{refactors}", refactorsStr.String(), 1)
 	}
 
 	if contributorsStr.Len() == contributorsInitialLength {
