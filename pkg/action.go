@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -459,8 +460,9 @@ func convertAndFilterCommitsForComponent(component string, commits []*github.Rep
 // sort them by release publish date.
 func filterAndSortReleasesForComponent(component string, releases []*github.RepositoryRelease) []*github.RepositoryRelease {
 	var matchingReleases []*github.RepositoryRelease
+	pattern := regexp.MustCompile(fmt.Sprintf(`^%s[0-9\.]+$`, getComponentPrefix(component)))
 	for _, release := range releases {
-		if strings.HasPrefix(strings.ToLower(release.GetTagName()), getComponentPrefix(component)) {
+		if pattern.MatchString(strings.ToLower(release.GetTagName())) {
 			matchingReleases = append(matchingReleases, release)
 		}
 	}
