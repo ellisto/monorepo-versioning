@@ -314,8 +314,8 @@ func (a VersioningAction) generateReleaseNotes(commits []*github.RepositoryCommi
 	fixesInitialLength := fixesStr.Len()
 
 	refactorsStr := strings.Builder{}
-	fixesStr.WriteString("### :raised_hands: Refactoring\n")
-	fixesStr.WriteString("_Changes or improvements to an existing implementation._\n")
+	refactorsStr.WriteString("### :raised_hands: Refactoring\n")
+	refactorsStr.WriteString("_Changes or improvements to an existing implementation._\n")
 
 	refactorsInitialLength := refactorsStr.Len()
 
