@@ -17,6 +17,8 @@ inputs:
     default: ''
   dry-run:
     description: "Whether to create the release on GitHub. If true, release history won't be tracked."
+    required: false
+    default: 'no'
   initial-version:
     description: 'Version to create if no existing version is found'
     required: false
