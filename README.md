@@ -29,9 +29,9 @@ Given the following commits:
 1. > fix(a): corrected parsing of enums from strings
 2. > feat(b): added a new gizmo
 3. > refactor(a): split the implementation of foobar into two separate classes
-4. > chore(a): fixed a  typo
+4. > chore(a): fixed a typo
 
-Then when a new version of `B` is generated, only commit #2 will be considered. When a new version of `A` is generated, only commits 1, and 3 will be considered. 
+Then when a new version of `B` is generated, only commit #2 will be considered. When a new version of `A` is generated, only commits #1, and #3 will be considered. 
 
 ## Versioning behaviour
 > TODO: In the future, these rules will be configurable. 
