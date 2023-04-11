@@ -1,5 +1,5 @@
 # monorepo-versioning
-GitHub Action to generate semantic versions for multiple monorepo components based on the Conventional Commits specification. 
+GitHub Action to generate semantic versions for multiple monorepo components based on the [Conventional Commits specification](https://www.conventionalcommits.org/en/v1.0.0/).
 
 Unlike some other versioning actions, this action makes no assumptions as to the language or ecosystem in use. Instead, it provides a version number which you can use with your package manager, container runtime, etc, of choice.
 
