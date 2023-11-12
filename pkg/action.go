@@ -191,9 +191,12 @@ func (a VersioningAction) getPreviousChangeTime(existingReleases []*github.Repos
 	// Releases are ordered descending by publish date
 	latestRelease := existingReleases[0]
 	fmt.Printf("Using %s as latest release for change time comparison...\n", latestRelease.GetName())
-	targetRevision := latestRelease.GetTargetCommitish()
+	ref, _, err := a.client.Git.GetRef(context.TODO(), a.owner, a.repository, fmt.Sprintf("refs/tags/%s", latestRelease.GetTagName()))
+	if err != nil {
+		panic(err)
+	}
 
-	commit, _, err := a.client.Git.GetCommit(context.Background(), a.owner, a.repository, targetRevision)
+	commit, _, err := a.client.Git.GetCommit(context.Background(), a.owner, a.repository, *ref.Object.SHA)
 	if err != nil {
 		panic(err)
 	}
