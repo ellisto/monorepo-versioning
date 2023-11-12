@@ -470,7 +470,10 @@ func filterAndSortReleasesForComponent(component string, releases []*github.Repo
 	sort.Slice(matchingReleases, func(i, j int) bool {
 		// Use > instead of < in the less function so that we end up sorting in descending (greatest first)
 		// order, instead of ascending (smallest first) order
-		return matchingReleases[i].PublishedAt.Unix() > matchingReleases[j].PublishedAt.Unix()
+		verI := semver.MustParse(strings.Split(matchingReleases[i].GetTagName(), "-")[1])
+		verJ := semver.MustParse(strings.Split(matchingReleases[j].GetTagName(), "-")[1])
+
+		return verI.GreaterThan(verJ)
 	})
 
 	return matchingReleases
